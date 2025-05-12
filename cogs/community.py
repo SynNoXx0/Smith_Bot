@@ -70,10 +70,11 @@ class Community(commands.Cog):
     @app_commands.command(name="suggestion", description="Envoyer une suggestion.")
     @app_commands.describe(message="Votre suggestion")
     async def suggestion(self, interaction: discord.Interaction, message: str):
+        await interaction.response.defer(ephemeral=True)
         embed = discord.Embed(title="💡 Suggestion", description=message, color=discord.Color.green())
         embed.set_footer(text=f"Suggestion de {interaction.user}")
-        await interaction.channel.send(embed=embed)
-        await interaction.response.send_message("✅ Suggestion envoyée avec succès !", ephemeral=True)
+        await interaction.followup.send(embed=embed)
+        await interaction.followup.send("✅ Suggestion envoyée avec succès !", ephemeral=True)
         await send_log_message(interaction, f"{interaction.user} a envoyé une suggestion : {message}")
 
     # /avis
@@ -85,8 +86,9 @@ class Community(commands.Cog):
         message="Votre avis"
     )
     async def avis(self, interaction: discord.Interaction, employe: str, note: int, message: str):
+        await interaction.response.defer(ephemeral=True)
         if note < 1 or note > 5:
-            await interaction.response.send_message("❌ La note doit être comprise entre 1 et 5.", ephemeral=True)
+            await interaction.followup.send("❌ La note doit être comprise entre 1 et 5.", ephemeral=True)
             return
 
         stars = "⭐" * note + "☆" * (5 - note)
@@ -97,8 +99,8 @@ class Community(commands.Cog):
         embed.add_field(name="💬 Avis", value=message, inline=False)
         embed.set_footer(text=f"Avis laissé par {interaction.user}")
 
-        await interaction.channel.send(embed=embed)
-        await interaction.response.send_message("✅ Avis envoyé avec succès.", ephemeral=True)
+        await interaction.followup.send(embed=embed)
+        await interaction.followup.send("✅ Avis envoyé avec succès.", ephemeral=True)
         await send_log_message(interaction, f"{interaction.user} a donné un avis sur {employe} : {stars} - {message}")
 
     @check_public_permissions("patchnote")
