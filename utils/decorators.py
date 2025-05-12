@@ -25,13 +25,17 @@ def check_public_permissions(command_name: str):
         user_role_ids = [role.id for role in interaction.user.roles]
         has_permissions = is_role_allowed_for_command(str(interaction.guild.id), command_name, user_role_ids)
         
-        # Si des permissions sont définies, vérifier si l'utilisateur a le rôle requis
-        if has_permissions:
-            if not any(str(role_id) in has_permissions for role_id in user_role_ids):
-                raise app_commands.CheckFailure("Tu n'as pas le rôle requis pour utiliser cette commande.")
+        # Si aucune permission n'est définie, autoriser l'utilisation de la commande
+        if not has_permissions:
+            return True
         
-        # Si aucune permission n'est définie ou si l'utilisateur a le rôle requis, autoriser
+        # Si des permissions sont définies, vérifier si l'utilisateur a le rôle requis
+        if not any(str(role_id) in has_permissions for role_id in user_role_ids):
+            raise app_commands.CheckFailure("Tu n'as pas le rôle requis pour utiliser cette commande.")
+        
+        # Si l'utilisateur a le rôle requis, autoriser la commande
         return True
+        
     return app_commands.check(predicate)
 
 def require_grade(*allowed_grades):
