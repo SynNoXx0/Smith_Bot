@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-from datetime import datetime, timedelta
+from datetime import datetime, time, timezone, timedelta
 from utils.sheet_utils import get_worksheet, get_log_channel_id
 from utils.decorators import check_permissions, check_public_permissions
 from cogs.logs import send_log_message
@@ -83,7 +83,7 @@ class Absences(commands.Cog):
         await interaction.followup.send(embed=embed, ephemeral=True)
         await send_log_message(interaction, f"{interaction.user} a déclaré une absence jusqu'au {date_fin} - Raison : {raison}")
 
-    @tasks.loop(time=datetime.time(hour=1, minute=0, tzinfo=datetime.timezone(datetime.timedelta(hours=1))))
+    @tasks.loop(time=time(hour=1, minute=0, tzinfo=timezone(timedelta(hours=1))))
     async def check_absences(self):
         # Utiliser le nom correct de la feuille ("absences")
         absence_sheet = get_worksheet("absences")
