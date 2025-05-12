@@ -66,18 +66,25 @@ class Community(commands.Cog):
 
         await interaction.followup.send("✅ Sondage créé avec succès !", ephemeral=True)
 
-    # /suggest
+    # /suggestion
     @check_public_permissions("suggestion")
     @app_commands.command(name="suggestion", description="Envoyer une suggestion.")
     @app_commands.describe(message="Votre suggestion")
     async def suggestion(self, interaction: discord.Interaction, message: str):
-        await interaction.response.defer(ephemeral=True)  # Différer la réponse
-        await asyncio.sleep(2)  # Attendre un court instant (1 seconde) pour simuler un traitement si nécessaire
+        # Différer la réponse immédiatement pour informer Discord que le bot met du temps
+        await interaction.response.defer(ephemeral=True)
+        
+        # Simuler un délai de traitement pour afficher "Bot is thinking..." (par exemple 2 secondes)
+        await asyncio.sleep(2)
+        
+        # Créer l'embed pour la suggestion
         embed = discord.Embed(title="💡 Suggestion", description=message, color=discord.Color.green())
         embed.set_footer(text=f"Suggestion de {interaction.user}")
         
-        # Utilisation de followup pour envoyer le message
+        # Envoyer l'embed dans le channel
         await interaction.followup.send(embed=embed)
+        
+        # Envoyer la confirmation avec un message éphemeral
         await interaction.followup.send("✅ Suggestion envoyée avec succès !", ephemeral=True)
         
         # Envoi du log
@@ -92,24 +99,34 @@ class Community(commands.Cog):
         message="Votre avis"
     )
     async def avis(self, interaction: discord.Interaction, employe: str, note: int, message: str):
-        await interaction.response.defer(ephemeral=True)  # Différer la réponse
-        await asyncio.sleep(2)  # Attendre un court instant (1 seconde) pour simuler un traitement si nécessaire
-
+        # Différer la réponse immédiatement pour informer Discord que le bot met du temps
+        await interaction.response.defer(ephemeral=True)
+        
+        # Simuler un délai de traitement pour afficher "Bot is thinking..." (par exemple 2 secondes)
+        await asyncio.sleep(2)
+        
+        # Vérifier que la note est correcte
         if note < 1 or note > 5:
             await interaction.followup.send("❌ La note doit être comprise entre 1 et 5.", ephemeral=True)
             return
 
+        # Générer les étoiles pour la note
         stars = "⭐" * note + "☆" * (5 - note)
 
+        # Créer l'embed pour l'avis
         embed = discord.Embed(title="📝 Avis sur un employé", color=discord.Color.orange())
         embed.add_field(name="👤 Employé", value=employe, inline=True)
         embed.add_field(name="⭐ Note", value=stars, inline=True)
         embed.add_field(name="💬 Avis", value=message, inline=False)
         embed.set_footer(text=f"Avis laissé par {interaction.user}")
 
+        # Envoyer l'embed de l'avis dans le channel
         await interaction.followup.send(embed=embed)
+        
+        # Envoyer la confirmation avec un message éphemeral
         await interaction.followup.send("✅ Avis envoyé avec succès.", ephemeral=True)
         
+        # Envoi du log
         await send_log_message(interaction, f"{interaction.user} a donné un avis sur {employe} : {stars} - {message}")
 
     @check_public_permissions("patchnote")
