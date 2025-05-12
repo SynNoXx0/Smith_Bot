@@ -103,6 +103,14 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 @bot.event
 async def on_ready():
     logger.info(f"✅ Connecté en tant que {bot.user}.")
+    try:
+        # Synchronisation des commandes slash
+        synced = await bot.tree.sync()
+        logger.info(f"🔁 Commandes slash synchronisées : {len(synced)}")
+    except Exception as e:
+        logger.error(f"⚠️ Erreur de synchronisation des commandes slash : {e}")
+    
+    # Charger les cogs après la synchronisation
     for ext in initial_extensions:
         try:
             await bot.load_extension(ext)
