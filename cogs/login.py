@@ -36,6 +36,7 @@ class Login(commands.Cog):
         )
 
         await interaction.followup.send("Configuration du système de login enregistrée avec succès.", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a configuré le système de login - Salon : {salon.mention}, Rôle : {role.mention}")
 
     # /login
     @check_public_permissions("login")
@@ -73,9 +74,8 @@ class Login(commands.Cog):
             await interaction.followup.send("Rôle introuvable sur le serveur.", ephemeral=True)
             return
 
-        await interaction.followup.send(f"Bienvenue {prenom} ! Vous êtes maintenant enregistré.", ephemeral=True)
-
-        await send_log_message(interaction, f"{interaction.user.mention} s'est enregistré !")
+        await interaction.followup.send(f"Bienvenue {prenom} ! Vous êtes maintenant enregistré.", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} s'est enregistré avec le pseudo {new_nick}")
 
     @check_permissions("remove_login_config")
     @app_commands.command(name="remove_login_config", description="Supprimer la configuration de login pour ce serveur.")
@@ -90,6 +90,7 @@ class Login(commands.Cog):
             if row[0] == guild_id:
                 login_ws.delete_rows(idx + 1)
                 await interaction.followup.send("Configuration de login supprimée avec succès.", ephemeral=True)
+                await send_log_message(interaction, f"{interaction.user} a supprimé la configuration du système de login")
                 return
 
         await interaction.followup.send("Aucune configuration de login trouvée pour ce serveur.", ephemeral=True)

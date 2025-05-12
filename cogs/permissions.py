@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from utils.sheet_utils import perms_ws  # Assure-toi que perms_ws pointe vers la bonne feuille
 from utils.decorators import check_permissions, check_public_permissions
+from cogs.logs import send_log_message
 
 class Perms(commands.Cog):
     def __init__(self, bot):
@@ -31,6 +32,7 @@ class Perms(commands.Cog):
             perms_ws.append_row([guild_id, commande, str(role.id)])
 
         await interaction.followup.send(f"Le rôle {role.mention} a été autorisé à utiliser la commande `{commande}`.", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a autorisé le rôle {role.mention} à utiliser la commande {commande}")
 
     # /remove_perms
     @check_permissions("remove_perms")
@@ -47,7 +49,7 @@ class Perms(commands.Cog):
         print(f"DEBUG: Recherche dans la feuille pour guild_id={guild_id}, command_name={commande}, role_id={role_id}")
 
         # On commence à la ligne 1 (pas la ligne d'en-tête)
-        for i, row in enumerate(all_rows[1:], start=1):  # Ignorer la première ligne d'en-tête
+        for i, row in enumerate(all_rows[1:], start=1):
             print(f"DEBUG: Vérification de la ligne {i}: {row}")  # Affiche chaque ligne
 
             # Vérification qu'il y a bien 3 colonnes dans la ligne
@@ -64,9 +66,10 @@ class Perms(commands.Cog):
                     # Suppression de la ligne à l'index i + 1 (les indices de Sheets commencent à 1)
                     perms_ws.delete_rows(i + 1, i + 1)  # Supprimer une seule ligne (de i+1 à i+1)
                     await interaction.followup.send(
-                        f"Le rôle {role.mention} n’a plus accès à la commande `{commande}`. La ligne a été supprimée.",
+                        f"Le rôle {role.mention} n'a plus accès à la commande `{commande}`. La ligne a été supprimée.",
                         ephemeral=True
                     )
+                    await send_log_message(interaction, f"{interaction.user} a retiré l'autorisation du rôle {role.mention} pour la commande {commande}")
                     return
                 except Exception as e:
                     print(f"ERROR: Impossible de supprimer la ligne : {e}")
@@ -105,6 +108,7 @@ class Perms(commands.Cog):
             embed.description = "Aucune permission définie pour ce serveur."
 
         await interaction.followup.send(embed=embed, ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a consulté les permissions des commandes")
 
 async def setup(bot):
     await bot.add_cog(Perms(bot))

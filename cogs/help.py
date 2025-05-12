@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from utils.decorators import check_permissions, check_public_permissions
+from cogs.logs import send_log_message
 
 class Help(commands.Cog):
     def __init__(self, bot):
@@ -19,6 +20,7 @@ class Help(commands.Cog):
         )
         embed.set_footer(text=f"Requête faite par {interaction.user}", icon_url=interaction.user.avatar.url if interaction.user.avatar else None)
         await interaction.response.send_message(embed=embed, ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a vérifié la latence du bot : {latency}ms")
 
     # /support
     @check_public_permissions("support")
@@ -31,6 +33,7 @@ class Help(commands.Cog):
         )
         embed.set_footer(text="Support du bot")
         await interaction.response.send_message(embed=embed, ephemeral=True)  # visible uniquement par l'utilisateur
+        await send_log_message(interaction, f"{interaction.user} a demandé le lien du serveur de support")
 
 
 async def setup(bot):

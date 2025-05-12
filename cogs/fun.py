@@ -3,6 +3,7 @@ import discord
 from discord import app_commands, Interaction
 from discord.ext import commands
 from utils.decorators import check_permissions, check_public_permissions
+from cogs.logs import send_log_message
 
 class Fun(commands.Cog):
     def __init__(self, bot):
@@ -15,6 +16,7 @@ class Fun(commands.Cog):
     async def say(self, interaction: discord.Interaction, message: str):
         await interaction.channel.send(message)
         await interaction.response.send_message("✅ Message envoyé.", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a fait parler le bot : {message}")
 
     # /coinflip
     @check_public_permissions("coinflip")
@@ -22,6 +24,7 @@ class Fun(commands.Cog):
     async def coinflip(self, interaction: Interaction):
         result = random.choice(["🪙 Pile", "🪙 Face"])
         await interaction.response.send_message(f"Résultat : **{result}**")
+        await send_log_message(interaction, f"{interaction.user} a lancé une pièce : {result}")
 
     # /dice
     @check_public_permissions("dice")
@@ -29,6 +32,7 @@ class Fun(commands.Cog):
     async def dice(self, interaction: Interaction):
         result = random.randint(1, 6)
         await interaction.response.send_message(f"🎲 Tu as lancé un dé : **{result}**")
+        await send_log_message(interaction, f"{interaction.user} a lancé un dé : {result}")
 
     # /chifumi
     @check_public_permissions("chifumi")
@@ -53,10 +57,11 @@ class Fun(commands.Cog):
             msg = resultat.get((choix_user, choix_bot), "Tu perds !")
 
         await interaction.response.send_message(f"🤖 Le bot a choisi **{choix_bot}**.\nRésultat : **{msg}**")
+        await send_log_message(interaction, f"{interaction.user} a joué à chifumi : {choix_user} vs {choix_bot} - {msg}")
 
     # /tictactoe
     @check_public_permissions("tictactoe")
-    @app_commands.command(name="tictactoe", description="Joue à un jeu de morpion contre quelqu’un.")
+    @app_commands.command(name="tictactoe", description="Joue à un jeu de morpion contre quelqu'un.")
     @app_commands.describe(adversaire="Mentionne l'utilisateur contre qui tu veux jouer")
     async def tictactoe(self, interaction: discord.Interaction, adversaire: discord.Member):
         if adversaire.bot:
@@ -71,6 +76,7 @@ class Fun(commands.Cog):
             f"{interaction.user.mention} VS {adversaire.mention}\nC'est au tour de {interaction.user.mention}",
             view=view
         )
+        await send_log_message(interaction, f"{interaction.user} a lancé une partie de morpion contre {adversaire}")
 
 class TicTacToeButton(discord.ui.Button):
     def __init__(self, row, col):
@@ -99,9 +105,11 @@ class TicTacToeButton(discord.ui.Button):
             for child in view.children:
                 child.disabled = True
             await interaction.response.edit_message(content=f"{interaction.user.mention} a gagné ! 🎉", view=view)
+            await send_log_message(interaction, f"Partie de morpion terminée : {interaction.user} a gagné contre {view.player2 if interaction.user == view.player1 else view.player1}")
             view.stop()
         elif view.is_full():
             await interaction.response.edit_message(content="Match nul ! 🤝", view=view)
+            await send_log_message(interaction, f"Partie de morpion terminée : Match nul entre {view.player1} et {view.player2}")
             view.stop()
         else:
             view.current_player = view.player2 if view.current_player == view.player1 else view.player1

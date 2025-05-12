@@ -2,8 +2,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
-from utils.sheet_utils import get_worksheet
+from utils.sheet_utils import get_worksheet, get_log_channel_id
 from utils.decorators import check_permissions, check_public_permissions
+from cogs.logs import send_log_message
 
 class Absences(commands.Cog):
     def __init__(self, bot):
@@ -37,6 +38,7 @@ class Absences(commands.Cog):
             sheet.append_row([str(interaction.guild.id), str(role.id)])  # Ajouter un nouveau rôle
 
         await interaction.followup.send(f"✅ Le rôle {role.mention} sera maintenant attribué lors d'une absence.", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a configuré le rôle d'absence sur {role.mention}")
 
     @check_public_permissions("absent")
     @app_commands.command(name="absent", description="Déclare une absence")
@@ -79,8 +81,9 @@ class Absences(commands.Cog):
             color=discord.Color.orange()
         )
         await interaction.followup.send(embed=embed, ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a déclaré une absence jusqu'au {date_fin} - Raison : {raison}")
 
-    @tasks.loop(hours=12)
+    @tasks.loop(time=datetime.time(hour=1, minute=0, tzinfo=datetime.timezone(datetime.timedelta(hours=1))))
     async def check_absences(self):
         # Utiliser le nom correct de la feuille ("absences")
         absence_sheet = get_worksheet("absences")
@@ -115,6 +118,12 @@ class Absences(commands.Cog):
                 role = guild.get_role(role_id)
                 if role and role in member.roles:
                     await member.remove_roles(role, reason="Fin d'absence")
+                    # Envoyer le log directement dans le salon de logs
+                    log_channel_id = get_log_channel_id(str(guild_id))
+                    if log_channel_id:
+                        log_channel = guild.get_channel(log_channel_id)
+                        if log_channel:
+                            await log_channel.send(f"Fin d'absence automatique pour {member.mention}")
 
                 rows_to_remove.append(i)
 
@@ -171,7 +180,7 @@ class Absences(commands.Cog):
             color=discord.Color.green()
         )
         await interaction.followup.send(embed=embed)
-
+        await send_log_message(interaction, f"{interaction.user} a mis fin à son absence manuellement")
 
     @check_permissions("absence_list")
     @app_commands.command(name="absence_list", description="📋 Liste des personnes actuellement absentes")

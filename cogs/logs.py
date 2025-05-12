@@ -28,19 +28,23 @@ class Logs(commands.Cog):
         
         # Envoyer un message confirmant la définition du salon
         await interaction.followup.send(f"Salon de logs défini pour ce serveur : {salon.mention}", ephemeral=True)
-        await send_log_message(interaction, f"Le salon des logs a ét configuré ici")
+        await send_log_message(interaction, f"{interaction.user} a configuré le salon de logs sur {salon.mention}")
 
-    # Commande pour retirer le salon de logs
+    # Commande pour supprimer le salon de logs
     @check_permissions("remove_logs")
-    @app_commands.command(name="remove_logs", description="Retirer le salon de logs pour ce serveur.")
+    @app_commands.command(name="remove_logs", description="Supprimer le salon de logs pour ce serveur.")
     async def remove_logs(self, interaction: discord.Interaction):
-        """Retirer le salon de logs du serveur."""
-        
-        # Retirer le salon de logs dans Google Sheets
-        remove_log_from_google_sheets(interaction.guild.id)
+        """Permet à l'utilisateur de supprimer le salon de logs."""
+        guild_id = str(interaction.guild.id)
+        await interaction.response.defer(ephemeral=True)
 
-        # Répondre à l'utilisateur
-        await interaction.response.send_message("Salon de logs retiré.", ephemeral=True)
+        # Supprimer le salon de logs de Google Sheets
+        remove_log_from_google_sheets(guild_id)
+        
+        # Envoyer un message confirmant la suppression
+        await interaction.followup.send("Salon de logs supprimé pour ce serveur.", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a supprimé la configuration du salon de logs")
+
 
 # Fonction asynchrone pour envoyer le message dans le salon de logs
 async def send_log_message(interaction, message):

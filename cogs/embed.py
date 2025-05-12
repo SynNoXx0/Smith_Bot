@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord.ui import View, button
 import asyncio
 from utils.decorators import check_permissions, require_grade
+from cogs.logs import send_log_message
 
 class EmbedBuilder(View):
     def __init__(self, bot):
@@ -123,6 +124,7 @@ class EmbedBuilder(View):
                     if response.lower() == "oui":
                         await interaction.channel.send(embed=self.embed)
                         await self.send_step(interaction, "✅ Embed envoyé.")
+                        await send_log_message(interaction, f"{interaction.user} a créé et envoyé un embed")
                     else:
                         await self.send_step(interaction, "❌ Envoi annulé.")
                     self.stop()

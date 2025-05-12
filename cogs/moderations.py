@@ -26,6 +26,7 @@ class Moderation(commands.Cog):
         try:
             await user.ban(reason=raison)
             await interaction.followup.send(f"{user} a été banni. Raison : {raison}")
+            await send_log_message(interaction, f"{interaction.user} a banni {user} - Raison : {raison}")
         except Exception as e:
             await interaction.followup.send(f"Erreur lors du bannissement : {e}")
     
@@ -53,6 +54,7 @@ class Moderation(commands.Cog):
         
         # Envoi du message contenant l'embed avec la liste des bannis
         await interaction.followup.send(embed=embed, ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a consulté la liste des bannis")
 
     # /unban
     @check_permissions("unban")
@@ -92,9 +94,9 @@ class Moderation(commands.Cog):
         except Exception as e:
             # Gérer toute exception qui pourrait survenir
             if not interaction.response.is_done():
-                await interaction.response.send_message("❌ Une erreur s’est produite.", ephemeral=True)
+                await interaction.response.send_message("❌ Une erreur s'est produite.", ephemeral=True)
             else:
-                await interaction.followup.send("❌ Une erreur s’est produite après la réponse initiale.", ephemeral=True)
+                await interaction.followup.send("❌ Une erreur s'est produite après la réponse initiale.", ephemeral=True)
 
             print("Erreur dans la commande unban :", e)
 
@@ -114,6 +116,7 @@ class Moderation(commands.Cog):
         try:
             await user.kick(reason=raison)
             await interaction.followup.send(f"{user} a été expulsé. Raison : {raison}")
+            await send_log_message(interaction, f"{interaction.user} a expulsé {user} - Raison : {raison}")
         except Exception as e:
             await interaction.followup.send(f"Erreur lors du kick : {e}")
 
@@ -134,6 +137,7 @@ class Moderation(commands.Cog):
             duration = timedelta(minutes=durée)
             await user.timeout(duration, reason=raison)
             await interaction.followup.send(f"{user} a été mute pendant {durée} minute(s). Raison : {raison}")
+            await send_log_message(interaction, f"{interaction.user} a mute {user} pendant {durée} minutes - Raison : {raison}")
         except Exception as e:
             await interaction.followup.send(f"Erreur lors du mute : {e}")
 
@@ -153,6 +157,7 @@ class Moderation(commands.Cog):
         try:
             await user.timeout(None)
             await interaction.followup.send(f"{user} a été unmute.")
+            await send_log_message(interaction, f"{interaction.user} a unmute {user}")
         except Exception as e:
             await interaction.followup.send(f"Erreur lors du unmute : {e}")
 
@@ -197,6 +202,7 @@ class Moderation(commands.Cog):
             embed.set_footer(text=f"Demandé par {interaction.user}", icon_url=interaction.user.display_avatar.url)
 
             await interaction.followup.send(embed=embed, ephemeral=True)
+            await send_log_message(interaction, f"{interaction.user} a consulté les informations du serveur")
         except Exception as e:
             await interaction.followup.send("❌ Une erreur est survenue.", ephemeral=True)
             print(f"[ERREUR serverinfo] : {e}")
@@ -220,7 +226,7 @@ class Moderation(commands.Cog):
             )
         except Exception as e:
             print(f"[ERREUR /slowmode] : {e}")
-            await interaction.followup.send("❌ Une erreur s’est produite en appliquant le mode lent.", ephemeral=True)
+            await interaction.followup.send("❌ Une erreur s'est produite en appliquant le mode lent.", ephemeral=True)
     
     # /nick
     @check_permissions("nick")
@@ -235,6 +241,7 @@ class Moderation(commands.Cog):
         try:
             await member.edit(nick=nickname)
             await interaction.response.send_message(f"✅ Le pseudo de {member.mention} a été changé en **{nickname}**.", ephemeral=True)
+            await send_log_message(interaction, f"{interaction.user} a changé le pseudo de {member} en {nickname}")
         except discord.Forbidden:
             await interaction.response.send_message("❌ Je n'ai pas la permission de changer le pseudo de ce membre.", ephemeral=True)
         except Exception as e:
@@ -261,6 +268,7 @@ class Moderation(commands.Cog):
         deleted = await interaction.channel.purge(limit=limit, check=is_user_message, bulk=True)
 
         await interaction.followup.send(f"✅ {len(deleted)} messages de {member.mention} ont été supprimés.", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a supprimé {len(deleted)} messages de {member}")
 
 async def setup(bot):
     await bot.add_cog(Moderation(bot))

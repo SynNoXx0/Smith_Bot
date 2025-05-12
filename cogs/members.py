@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from utils.sheet_utils import get_worksheet
 from utils.decorators import check_permissions
+from cogs.logs import send_log_message
 
 class MemberEvents(commands.Cog):
     def __init__(self, bot):
@@ -42,6 +43,7 @@ class MemberEvents(commands.Cog):
         self.update_config(interaction.guild.id, "arrival_channel_id", channel.id)
         await interaction.response.defer(ephemeral=True)
         await interaction.followup.send(f"✅ Salon d'arrivée défini sur {channel.mention}", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a configuré le salon d'arrivée sur {channel.mention}")
 
     @check_permissions("set_leave_message")
     @app_commands.command(name="set_leave_message", description="Définit le salon pour les messages de départ.")
@@ -49,6 +51,7 @@ class MemberEvents(commands.Cog):
         self.update_config(interaction.guild.id, "departure_channel_id", channel.id)
         await interaction.response.defer(ephemeral=True)
         await interaction.followup.send(f"✅ Salon de départ défini sur {channel.mention}", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a configuré le salon de départ sur {channel.mention}")
 
     @check_permissions("autorole")
     @app_commands.command(name="autorole", description="Configurer les rôles automatiques")
@@ -111,6 +114,7 @@ class MemberEvents(commands.Cog):
                     sheet.update_cell(row_index, 2, ",".join(current_roles))
                 
                 await interaction.followup.send(f"✅ Le rôle {role.mention} a été ajouté aux rôles automatiques.", ephemeral=True)
+                await send_log_message(interaction, f"{interaction.user} a ajouté le rôle {role.mention} aux rôles automatiques")
                 
             elif action == "remove":
                 if not role:
@@ -135,6 +139,7 @@ class MemberEvents(commands.Cog):
                     sheet.delete_rows(row_index)
                     
                 await interaction.followup.send(f"✅ Le rôle {role.mention} a été retiré des rôles automatiques.", ephemeral=True)
+                await send_log_message(interaction, f"{interaction.user} a retiré le rôle {role.mention} des rôles automatiques")
                 
             elif action == "list":
                 # Debug: Afficher les informations de débogage
@@ -174,6 +179,7 @@ class MemberEvents(commands.Cog):
                     color=discord.Color.blue()
                 )
                 await interaction.followup.send(embed=embed, ephemeral=True)
+                await send_log_message(interaction, f"{interaction.user} a consulté la liste des rôles automatiques")
                 
         except Exception as e:
             print(f"Erreur lors de l'exécution de la commande autorole: {e}")

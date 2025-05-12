@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from utils.decorators import check_permissions, check_public_permissions
+from cogs.logs import send_log_message
 
 class Community(commands.Cog):
     def __init__(self, bot):
@@ -73,6 +74,7 @@ class Community(commands.Cog):
         embed.set_footer(text=f"Suggestion de {interaction.user}")
         await interaction.channel.send(embed=embed)
         await interaction.response.send_message("✅ Suggestion envoyée avec succès !", ephemeral=True)
+        await send_log_message(interaction, f"{interaction.user} a envoyé une suggestion : {message}")
 
     # /avis
     @check_public_permissions("avis")
@@ -97,7 +99,7 @@ class Community(commands.Cog):
 
         await interaction.channel.send(embed=embed)
         await interaction.response.send_message("✅ Avis envoyé avec succès.", ephemeral=True)
-
+        await send_log_message(interaction, f"{interaction.user} a donné un avis sur {employe} : {stars} - {message}")
 
     @check_public_permissions("patchnote")
     @app_commands.command(name="patchnote", description="Affiche le dernier changelog.")
@@ -127,6 +129,7 @@ class Community(commands.Cog):
             embed.set_footer(text=f"Publié par {latest_message.author}", icon_url=latest_message.author.display_avatar.url)
 
             await interaction.response.send_message(embed=embed)
+            await send_log_message(interaction, f"{interaction.user} a consulté le dernier patchnote")
         except discord.Forbidden:
             await interaction.response.send_message("❌ Le bot n'a pas la permission de lire l'historique du salon.", ephemeral=True)
         except Exception as e:
