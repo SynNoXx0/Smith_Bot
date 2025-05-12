@@ -66,6 +66,10 @@ import os
 import asyncio
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 token = os.getenv("DISCORD_TOKEN")
@@ -98,20 +102,22 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 
 @bot.event
 async def on_ready():
-    print(f"✅ Connecté en tant que {bot.user}.")
+    logger.info(f"✅ Connecté en tant que {bot.user}")
+    logger.info("Fichiers dans ./cogs :", os.listdir("./cogs"))
+    try:
+        synced = await bot.tree.sync()
+        logger.info(f"🔁 Commandes slash synchronisées : {len(synced)}")
+    except Exception as e:
+        logger.info(f"⚠️ Erreur de sync des slash commandes : {e}")
+
     for ext in initial_extensions:
         try:
             await bot.load_extension(ext)
-            print(f"🔌 Cog chargée : {ext}")
+            logger.info(f"🔌 Cog chargée : {ext}")
         except Exception as e:
-            print(f"❌ Erreur de chargement pour {ext} : {e}")
-
-    try:
-        # Synchroniser les commandes Slash (si utilisé)
-        await bot.tree.sync()
-        print(f"📡 {len(await bot.tree.fetch_commands())} commandes synchronisées.")
-    except Exception as e:
-        print(f"❌ Erreur lors de la synchronisation : {e}")
+            import traceback
+            traceback.print_exc()
+            logger.error(f"❌ Erreur de chargement pour {ext} : {e}")
 
 @bot.event
 async def on_message(message):
