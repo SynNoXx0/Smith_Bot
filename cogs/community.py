@@ -72,7 +72,7 @@ class Community(commands.Cog):
     @app_commands.describe(message="Votre suggestion")
     async def suggestion(self, interaction: discord.Interaction, message: str):
         await interaction.response.defer(ephemeral=True)  # Différer la réponse
-        await asyncio.sleep(1)  # Attendre un court instant (1 seconde) pour simuler un traitement si nécessaire
+        await asyncio.sleep(2)  # Attendre un court instant (1 seconde) pour simuler un traitement si nécessaire
         embed = discord.Embed(title="💡 Suggestion", description=message, color=discord.Color.green())
         embed.set_footer(text=f"Suggestion de {interaction.user}")
         
@@ -93,7 +93,7 @@ class Community(commands.Cog):
     )
     async def avis(self, interaction: discord.Interaction, employe: str, note: int, message: str):
         await interaction.response.defer(ephemeral=True)  # Différer la réponse
-        await asyncio.sleep(1)  # Attendre un court instant (1 seconde) pour simuler un traitement si nécessaire
+        await asyncio.sleep(2)  # Attendre un court instant (1 seconde) pour simuler un traitement si nécessaire
 
         if note < 1 or note > 5:
             await interaction.followup.send("❌ La note doit être comprise entre 1 et 5.", ephemeral=True)
