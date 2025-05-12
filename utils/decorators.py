@@ -25,12 +25,12 @@ def check_public_permissions(command_name: str):
         user_role_ids = [role.id for role in interaction.user.roles]
         has_permissions = is_role_allowed_for_command(str(interaction.guild.id), command_name)
         
-        # Si aucune permission n'est définie (has_permissions est vide ou None), autoriser l'utilisation
-        if not has_permissions:
+        # Si aucune permission n'est définie (has_permissions est False ou None), autoriser l'utilisation
+        if has_permissions is False or has_permissions is None:
             return True
         
-        # Si has_permissions est une liste ou un autre itérable, vérifier si l'utilisateur a le rôle requis
-        if isinstance(has_permissions, list):  # Vérifie si has_permissions est une liste
+        # Si has_permissions est True (permissions définies), vérifier si l'utilisateur a le rôle requis
+        if isinstance(has_permissions, list):  # Vérifie si has_permissions est une liste de rôles autorisés
             if not any(str(role_id) in has_permissions for role_id in user_role_ids):
                 raise app_commands.CheckFailure("Tu n'as pas le rôle requis pour utiliser cette commande.")
         
